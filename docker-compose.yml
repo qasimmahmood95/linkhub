@@ -1,0 +1,13 @@
+services:
+  linkhub:
+    build: .
+    container_name: linkhub
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # Set in a .env file next to this compose file (see .env.example).
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?Set ADMIN_TOKEN in .env}
+    volumes:
+      # SQLite database (and optional avatar image) live here.
+      - ./data:/data
