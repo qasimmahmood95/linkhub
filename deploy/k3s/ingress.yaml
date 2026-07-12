@@ -1,0 +1,26 @@
+# LAN-only hostname served by k3s's bundled Traefik. This host gives full
+# access, including /admin — the app still requires the token, and the
+# hostname only resolves on your network.
+#
+# Do NOT point a public DNS name or tunnel at this Ingress. Public exposure
+# stays behind Nginx Proxy Manager (or your tunnel) targeting this same
+# hostname/service, with the /admin location block from the README applied
+# there. That keeps the admin surface unreachable from the internet while the
+# app's own auth remains the backstop.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: linkhub
+  namespace: linkhub
+spec:
+  rules:
+    - host: linkhub.lan # adjust to your LAN DNS
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: linkhub
+                port:
+                  name: http

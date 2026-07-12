@@ -1,0 +1,15 @@
+# SQLite database and optional avatar image. No storageClassName so k3s's
+# default local-path provisioner is used; that pins the pod to one node,
+# which is fine for a single-replica app. The real backup is the JSON export
+# cron (see README "Backup and restore"), not this volume.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: linkhub-data
+  namespace: linkhub
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

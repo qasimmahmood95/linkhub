@@ -36,6 +36,14 @@ The database is created and seeded on first start, in `./data`. On a Pi, make
 sure the bind-mounted directory is writable by uid 1000 (the container runs as
 the unprivileged `node` user): `mkdir -p data && sudo chown 1000:1000 data`.
 
+### k3s
+
+Running on a k3s cluster instead? Manifests (single-replica Deployment, PVC,
+Service, LAN-only Ingress) and a step-by-step guide live in
+[deploy/k3s](deploy/k3s/README.md). CI publishes multi-arch (amd64/arm64)
+images to `ghcr.io/qasimmahmood95/linkhub` on every push to `main` and on
+`v*` tags.
+
 ## Intended deployment
 
 ```

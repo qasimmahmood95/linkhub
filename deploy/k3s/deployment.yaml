@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkhub
+  namespace: linkhub
+  labels:
+    app: linkhub
+spec:
+  # Strictly one replica: SQLite is single-writer and the login rate limiter
+  # is in-process memory. Do not scale this horizontally.
+  replicas: 1
+  strategy:
+    # Recreate, not RollingUpdate: the volume is ReadWriteOnce, so old and new
+    # pods cannot mount it simultaneously.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: linkhub
+  template:
+    metadata:
+      labels:
+        app: linkhub
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: linkhub
+          # CI publishes multi-arch (amd64/arm64) images here; pin a version
+          # tag or digest rather than tracking latest in production.
+          image: ghcr.io/qasimmahmood95/linkhub:latest
+          ports:
+            - name: http
+              containerPort: 3000
+          env:
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: linkhub-admin-token
+                  key: ADMIN_TOKEN
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 192Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: linkhub-data
